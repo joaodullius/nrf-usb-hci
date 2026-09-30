@@ -110,25 +110,27 @@ Arquivos:
 - `sysbuild/b0n.conf`: desliga MPSL e FEM no b0n (a placa da EVK-NORA-B12 liga os
   dois no network core; o controlador Bluetooth mantém).
 - `sysbuild.conf`: netcore `hci_ipc`, MCUboot overwrite-only com duas imagens, b0n,
-  sem Partition Manager, sem flash externa, chave do b0n fixa.
+  sem Partition Manager, sem flash externa, chave do b0n fixa (teste do MCUboot).
 
 ## Chaves de assinatura
 
-- **b0n (network core):** `keys/b0n_dev_private.pem`, que **não** está no
-  repositório. Gere a sua antes do primeiro build (ECDSA P-256):
+As duas chaves de desenvolvimento são as de teste que vêm com o MCUboot no NCS.
+Elas são públicas, fixas e iguais em qualquer máquina, então um clone compila sem
+nenhum passo extra e as atualizações continuam válidas entre builds.
 
-  ```bash
-  openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out keys/b0n_dev_private.pem
-  ```
+| Bootloader            | Chave                                                  | Opção                                     |
+|-----------------------|--------------------------------------------------------|-------------------------------------------|
+| MCUboot (app core)    | `root-rsa-2048.pem` (padrão do MCUboot)                | `SB_CONFIG_BOOT_SIGNATURE_KEY_FILE`       |
+| b0n (network core)    | `${ZEPHYR_MCUBOOT_MODULE_DIR}/root-ec-p256-pkcs8.pem`  | `SB_CONFIG_SECURE_BOOT_SIGNING_KEY_FILE`  |
 
-  O hash da chave pública é gravado no provisionamento do network core na gravação
-  pela J-Link. Atualizações só são aceitas se assinadas com a mesma chave, então
-  guarde esse arquivo. Não dependa de uma chave gerada dentro de `build/`: um build
-  limpo gera outra e invalida as atualizações.
-- **MCUboot:** chave RSA padrão do MCUboot (`root-rsa-2048.pem`), só para
-  desenvolvimento.
-- Antes de produção: gerar e proteger chaves próprias, e trocar o VID/PID de testes
-  do Zephyr (`CONFIG_SAMPLE_USBD_VID`/`PID`).
+- O hash da chave do b0n é gravado no provisionamento do network core na gravação
+  pela J-Link. Atualizações do network core só são aceitas se assinadas com a mesma
+  chave; trocar a chave exige uma nova gravação completa pela J-Link.
+- Não deixe o b0n sem chave configurada: nesse caso o NCS gera uma chave aleatória
+  dentro de `build/`, e um build limpo invalida as atualizações.
+- **Produção:** chaves públicas não protegem nada. Gere e guarde chaves próprias
+  para os dois bootloaders (fora do repositório; `*.pem` está no `.gitignore`) e
+  troque o VID/PID de testes do Zephyr (`CONFIG_SAMPLE_USBD_VID`/`PID`).
 
 ## Build
 
@@ -315,6 +317,9 @@ Linux: `tools/linux_test.sh update <dir>` faz esses passos na ordem correta.
 | Só app core              | 0.0.0           | 1.0.1           | 4,7 s         | 8 s          |
 | Os dois juntos           | 1.0.1 / fw 2    | 1.0.2 / fw 3    | 7,2 s + 4,7 s | 15 s         |
 
+Depois da troca da chave do b0n para a chave de teste do MCUboot, o teste dos dois
+núcleos juntos foi repetido (0.0.0 / fw 1 para 1.0.1 / fw 2) com o mesmo resultado.
+
 Depois de cada teste a placa voltou a enumerar as duas funções USB (Bluetooth e a
 porta serial). A EVK-NORA-B12 compila com o mesmo layout, mas não foi testada em
 hardware.
@@ -339,8 +344,8 @@ atualização pelo app.
   enumera normalmente num PC. Próximo passo: testar com um hub USB 2.0 entre o
   adaptador e a placa.
 - **EVK-NORA-B12:** compilado, sem teste em hardware.
-- **Produção:** trocar a chave do MCUboot, proteger a chave do b0n e usar VID/PID
-  próprios.
+- **Produção:** chaves próprias para MCUboot e b0n (hoje são as chaves públicas de
+  teste) e VID/PID próprios.
 
 ## Configuração (`prj.conf`)
 
