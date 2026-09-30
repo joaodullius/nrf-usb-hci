@@ -1,0 +1,6 @@
+build/
+build_*/
+*.log
+
+# Signing keys are never committed. See README ("Chaves de assinatura").
+keys/*.pem

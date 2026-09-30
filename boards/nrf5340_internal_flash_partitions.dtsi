@@ -1,0 +1,57 @@
+/*
+ * nRF5340 application core flash layout, internal flash only.
+ * Used by the Thingy:53 board overlay and by MCUboot (sysbuild/mcuboot.overlay),
+ * so the app and the bootloader always agree on the slots. The EVK-NORA-B12
+ * board files (boards/u-blox/ubx_evknorab12) define the same layout natively.
+ *
+ *   0x000000  mcuboot   64 KB
+ *   0x010000  slot0    352 KB  image 0 (cpuapp) active
+ *   0x068000  slot1    352 KB  image 0 (cpuapp) update
+ *   0x0C0000  slot3    256 KB  image 1 (cpunet) update
+ *
+ * slot3 must have the same size as slot2 (256 KB RAM flash simulator,
+ * CONFIG_NRF53_RAM_FLASH_SIZE): MCUboot only accepts image slots with the
+ * same number of sectors, otherwise it logs "slots have non-compatible
+ * sectors" and silently skips the network core update.
+ *
+ * slot2 (image 1 primary) is the RAM flash simulator used by PCD, added by
+ * the NCS sysbuild (nrf/modules/mcuboot/flash_sim.overlay).
+ */
+
+&flash0 {
+	partitions {
+		/*
+		 * Drop the default nRF5340 partitions by node name (not by label), so
+		 * this file also applies cleanly to boards that already define this
+		 * layout, such as ubx_evknorab12. Missing nodes are ignored.
+		 */
+		/delete-node/ partition@0;
+		/delete-node/ partition@10000;
+		/delete-node/ partition@84000;
+		/delete-node/ partition@f8000;
+
+		boot_partition: partition@0 {
+			compatible = "zephyr,mapped-partition";
+			label = "mcuboot";
+			reg = <0x0 DT_SIZE_K(64)>;
+		};
+
+		slot0_partition: partition@10000 {
+			compatible = "zephyr,mapped-partition";
+			label = "image-0";
+			reg = <0x10000 DT_SIZE_K(352)>;
+		};
+
+		slot1_partition: partition@68000 {
+			compatible = "zephyr,mapped-partition";
+			label = "image-1";
+			reg = <0x68000 DT_SIZE_K(352)>;
+		};
+
+		slot3_partition: partition@c0000 {
+			compatible = "zephyr,mapped-partition";
+			label = "image-3";
+			reg = <0xc0000 DT_SIZE_K(256)>;
+		};
+	};
+};

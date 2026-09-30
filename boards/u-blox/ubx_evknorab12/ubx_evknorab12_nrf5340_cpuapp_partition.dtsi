@@ -1,0 +1,58 @@
+/*
+ * EVK-NORA-B12 application core memory layout (project-specific).
+ *
+ * The NORA-B12 module has no external flash, so every MCUboot slot is in
+ * internal flash. Same layout as the Thingy:53 test setup:
+ *
+ *   0x000000  mcuboot   64 KB
+ *   0x010000  slot0    352 KB  image 0 (cpuapp) active
+ *   0x068000  slot1    352 KB  image 0 (cpuapp) update
+ *   0x0C0000  slot3    256 KB  image 1 (cpunet) update
+ *
+ * slot3 must have the same size as slot2, the 256 KB RAM flash simulator the
+ * NCS sysbuild adds for network core updates (CONFIG_NRF53_RAM_FLASH_SIZE).
+ * MCUboot only accepts slots with the same number of sectors.
+ *
+ * Replaces zephyr/dts/vendor/nordic/nrf5340_cpuapp_partition.dtsi.
+ */
+
+&flash0 {
+	partitions {
+		ranges;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		boot_partition: partition@0 {
+			compatible = "zephyr,mapped-partition";
+			label = "mcuboot";
+			reg = <0x0 DT_SIZE_K(64)>;
+		};
+
+		slot0_partition: partition@10000 {
+			compatible = "zephyr,mapped-partition";
+			label = "image-0";
+			reg = <0x10000 DT_SIZE_K(352)>;
+		};
+
+		slot1_partition: partition@68000 {
+			compatible = "zephyr,mapped-partition";
+			label = "image-1";
+			reg = <0x68000 DT_SIZE_K(352)>;
+		};
+
+		slot3_partition: partition@c0000 {
+			compatible = "zephyr,mapped-partition";
+			label = "image-3";
+			reg = <0xc0000 DT_SIZE_K(256)>;
+		};
+	};
+};
+
+&uicr {
+	bl_storage: uicr@100 {
+		reg = <0x100 0x280>;
+	};
+};
+
+#include <nordic/nrf5340_sram_partition.dtsi>
+#include <nordic/nrf5340_shared_sram_partition.dtsi>

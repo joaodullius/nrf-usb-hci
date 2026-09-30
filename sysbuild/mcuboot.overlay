@@ -1,0 +1,7 @@
+#include "../boards/nrf5340_internal_flash_partitions.dtsi"
+
+/ {
+	chosen {
+		zephyr,code-partition = &boot_partition;
+	};
+};

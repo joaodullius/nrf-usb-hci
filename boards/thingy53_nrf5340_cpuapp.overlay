@@ -1,0 +1,6 @@
+/*
+ * Thingy:53 used as a stand-in for an nRF5340 module without external flash:
+ * all MCUboot slots are in internal flash and no partition is placed on the
+ * on-board MX25R64.
+ */
+#include "nrf5340_internal_flash_partitions.dtsi"

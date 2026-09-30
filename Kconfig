@@ -1,0 +1,5 @@
+# Copied from zephyr/samples/subsys/usb/common/Kconfig.sample_usbd so the
+# sample_usbd_init.c helper works outside the Zephyr tree.
+rsource "Kconfig.sample_usbd"
+
+source "Kconfig.zephyr"

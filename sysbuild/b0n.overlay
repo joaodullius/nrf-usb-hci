@@ -1,0 +1,35 @@
+/* Network core flash layout for b0n (secure bootloader): b0n | provision | s0 */
+
+/ {
+	chosen {
+		zephyr,code-partition = &b0n_partition;
+	};
+};
+
+&flash1 {
+	partitions {
+		/* Drop the board's default network core partitions (by node name). */
+		/delete-node/ partition@0;
+		/delete-node/ partition@c000;
+		/delete-node/ partition@23000;
+		/delete-node/ partition@3a000;
+
+		b0n_partition: partition@0 {
+			compatible = "zephyr,mapped-partition";
+			label = "b0n";
+			reg = <0x0 0x8580>;
+		};
+
+		bl_storage: provision_partition: partition@8580 {
+			compatible = "zephyr,mapped-partition";
+			label = "b0-provision-data";
+			reg = <0x8580 0x280>;
+		};
+
+		s0_partition: partition@8800 {
+			compatible = "zephyr,mapped-partition";
+			label = "image-0";
+			reg = <0x8800 DT_SIZE_K(222)>;
+		};
+	};
+};
