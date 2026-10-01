@@ -112,6 +112,23 @@ Arquivos:
 - `sysbuild.conf`: netcore `hci_ipc`, MCUboot overwrite-only com duas imagens, b0n,
   sem Partition Manager, sem flash externa, chave do b0n fixa (teste do MCUboot).
 
+### Placas sem cristal de 32 kHz
+
+As duas placas suportadas usam o cristal de 32,768 kHz (LFXO). Em hardware sem
+esse cristal, a fonte do relógio de baixa frequência precisa ser o oscilador RC
+interno em **todas** as imagens: app, MCUboot, b0n e hci_ipc. O lugar natural é a
+definição da placa (`*_cpuapp_defconfig` e `*_cpunet_defconfig`):
+
+```
+CONFIG_CLOCK_CONTROL_NRF_K32SRC_RC=y
+```
+
+### Network core
+
+O app libera o network core do reset no boot (`CONFIG_SOC_NRF53_CPUNET_ENABLE=y`
+no `prj.conf`). A Thingy:53 já faz isso por padrão, mas a EVK-NORA-B12 não: sem a
+opção, o app, a USB e o MCUmgr funcionam, e o controlador Bluetooth nunca sobe.
+
 ## Chaves de assinatura
 
 As duas chaves de desenvolvimento são as de teste que vêm com o MCUboot no NCS.
