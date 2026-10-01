@@ -2,11 +2,14 @@
 
 &flash1 {
 	partitions {
-		/* Drop the board's default network core partitions (by node name). */
+		/* Drop the board's network core partitions by node name: NCS defaults
+		 * (@c000, @23000, @3a000) and a common custom split (@22000, @38000). */
 		/delete-node/ partition@0;
 		/delete-node/ partition@c000;
 		/delete-node/ partition@23000;
 		/delete-node/ partition@3a000;
+		/delete-node/ partition@22000;
+		/delete-node/ partition@38000;
 
 		b0n_partition: partition@0 {
 			compatible = "zephyr,mapped-partition";

@@ -23,11 +23,13 @@
 		/*
 		 * Drop the default nRF5340 partitions by node name (not by label), so
 		 * this file also applies cleanly to boards that already define this
-		 * layout, such as ubx_evknorab12. Missing nodes are ignored.
+		 * layout, such as ubx_evknorab12. Missing nodes are ignored. Also covers
+		 * custom boards with slot1 at 0x42000.
 		 */
 		/delete-node/ partition@0;
 		/delete-node/ partition@10000;
 		/delete-node/ partition@84000;
+		/delete-node/ partition@42000;
 		/delete-node/ partition@f8000;
 
 		boot_partition: partition@0 {
